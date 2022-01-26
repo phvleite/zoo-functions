@@ -2,8 +2,6 @@ const data = require('../data/zoo_data');
 
 const dbSpecies = data.species;
 
-// dbSpecies.forEach((specie) => console.log(specie));
-
 const countAllAnimals = (() => {
   const countSpecies = {};
   dbSpecies.forEach((specie) => {
