@@ -8,6 +8,8 @@ const nw = data.species.filter((specie) => specie.location === 'NW');
 const se = data.species.filter((specie) => specie.location === 'SE');
 const sw = data.species.filter((specie) => specie.location === 'SW');
 
+console.log(ne);
+
 function getLocation() {
   return {
     NE: ne.map((specie) => specie.name),
@@ -69,9 +71,5 @@ function getAnimalMap(options) {
   if (!options || !options.includeNames) return getLocation();
   return returnFilter(options);
 }
-
-const varOptions = { includeNames: true, sorted: true };
-
-console.log(getAnimalMap(varOptions));
 
 module.exports = getAnimalMap;
