@@ -38,9 +38,14 @@ function getAllTokenCoverage() {
 }
 
 function getTokenCoverage(id) {
+  const [valueRequest] = Object.values(id);
+  let idEmployee = '';
+  listDataEmployees.forEach((employee) => {
+    if (employee.includes(valueRequest)) [idEmployee] = employee;
+  });
   let tokenCoverageEmployee = {};
   data.employees.forEach((employee) => {
-    if (employee.id === id) {
+    if (employee.id === idEmployee) {
       tokenCoverageEmployee = {
         id: employee.id,
         fullName: `${employee.firstName} ${employee.lastName}`,
@@ -53,24 +58,27 @@ function getTokenCoverage(id) {
 }
 
 function getVerifyRequest(request) {
+  let verifyEmployee = false;
+  const [valueRequest] = Object.values(request);
   listDataEmployees.forEach((employee) => {
-    if (employee.includes(request) === true) {
-      console.log(employee[0]);
-      getTokenCoverage(employee[0]);
+    if (employee.includes(valueRequest)) {
+      verifyEmployee = true;
     }
   });
-  return 'requisição não localizada';
+  return verifyEmployee;
 }
 
 function getEmployeesCoverage(request) {
   // seu código aqui
-  if (!request) return getAllTokenCoverage();
-  return getVerifyRequest(request);
+  try {
+    if (!request) return getAllTokenCoverage();
+    if (!getVerifyRequest(request)) {
+      throw new Error('Informações inválidas');
+    }
+    return getTokenCoverage(request);
+  } catch (err) {
+    throw err.message;
+  }
 }
 
 module.exports = getEmployeesCoverage;
-
-console.log(getEmployeesCoverage('c5b83cb3-a451-49e2-ac45-ff3f54fbe7e1'));
-// getEmployeesCoverage('Ola');
-// getEmployeesCoverage('Azevado');
-// console.log(getEmployeesCoverage());
