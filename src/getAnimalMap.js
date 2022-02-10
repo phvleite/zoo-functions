@@ -1,75 +1,129 @@
 const data = require('../data/zoo_data');
 
-// Solução encontrada na branch de Queite Castiglioni - Turma 19 - Tribo A
-// link: (https://github.com/tryber/sd-19-a-project-zoo-functions/blob/queite-zoo-functions-project/src/getAnimalMap.js)
-
-const ne = data.species.filter((specie) => specie.location === 'NE');
-const nw = data.species.filter((specie) => specie.location === 'NW');
-const se = data.species.filter((specie) => specie.location === 'SE');
-const sw = data.species.filter((specie) => specie.location === 'SW');
-
-console.log(ne);
-
-function getLocation() {
-  return {
-    NE: ne.map((specie) => specie.name),
-    NW: nw.map((specie) => specie.name),
-    SE: se.map((specie) => specie.name),
-    SW: sw.map((specie) => specie.name),
-  };
+function getGeoLocations() {
+  const allLocations = data.species.map((specie) => specie.location);
+  const geoLocations = allLocations.filter((local, ind) => allLocations.indexOf(local) === ind);
+  return geoLocations;
 }
 
-function getResidentsByName(location, sorted) {
-  const residentsBySpecie = location.map((specie) => {
-    const specieName = specie.name;
-    const residents = specie.residents.map((resident) => resident.name);
-    if (sorted) return { [specieName]: residents.sort() };
-    return { [specieName]: residents };
+function getSpeciesLocations(geoLocations) {
+  const localSpecies = {};
+  geoLocations.forEach((local) => {
+    const species = Object.values(data.species.filter((specie) => specie.location === local));
+    localSpecies[local] = species;
   });
-  return residentsBySpecie;
+  return localSpecies;
 }
 
-function getResidentsBySexFiltered(location, sex, sorted) {
-  const residentsBySexFiltered = location.map((specie) => {
-    const specieName = specie.name;
-    const residents = specie.residents.filter(((resident) => resident.sex === sex))
-      .map((resident) => resident.name);
-    if (sorted) return { [specieName]: residents.sort() };
-    return { [specieName]: residents };
+function getResidentsSpecies() {
+  const allSpecies = data.species.map((specie) => [specie.name, specie.residents]);
+  const allResidentsBySpecie = [];
+  allSpecies.forEach((specie) => {
+    const residents = [];
+    for (let ind = 0; ind < specie[1].length; ind += 1) {
+      residents.push(specie[1][ind]);
+    }
+    allResidentsBySpecie.push([specie[0], residents]);
   });
-  return residentsBySexFiltered;
+  return allResidentsBySpecie;
 }
 
-function createMapBySex(sex, sorted) {
-  return {
-    NE: getResidentsBySexFiltered(ne, sex, sorted),
-    NW: getResidentsBySexFiltered(nw, sex, sorted),
-    SE: getResidentsBySexFiltered(se, sex, sorted),
-    SW: getResidentsBySexFiltered(sw, sex, sorted),
-  };
+function getResidentsBySex(sex, sorted) {
+  const allResidentsBySpecie = getResidentsSpecies();
+  const allSpeciesBySex = {};
+  allResidentsBySpecie.forEach((specie) => {
+    const allResidentsBySex = [];
+    for (let ind = 0; ind < specie[1].length; ind += 1) {
+      if (specie[1][ind].sex === sex) {
+        allResidentsBySex.push(specie[1][ind].name);
+      }
+    }
+    if (sorted) allResidentsBySex.sort();
+    allSpeciesBySex[specie[0]] = allResidentsBySex;
+  });
+  return allSpeciesBySex;
 }
 
-function createMapByName(sorted) {
-  const residentsByName = {
-    NE: getResidentsByName(ne, sorted),
-    NW: getResidentsByName(nw, sorted),
-    SE: getResidentsByName(se, sorted),
-    SW: getResidentsByName(sw, sorted),
-  };
-  return residentsByName;
+function getGeoSpeciesResidentsLocationsBySex(sex, sorted) {
+  const allSpeciesbySex = getResidentsBySex(sex, sorted);
+  const geoLocations = getGeoLocations();
+  const speciesLocations = getSpeciesLocations(geoLocations);
+  let residenstLocal = [];
+  const geoResidentsLocal = {};
+  geoLocations.forEach((local) => {
+    for (let ind = 0; ind < speciesLocations[local].length; ind += 1) {
+      const specie = speciesLocations[local][ind].name;
+      const speciesLocal = {};
+      speciesLocal[specie] = allSpeciesbySex[specie];
+      residenstLocal.push(speciesLocal);
+    }
+    geoResidentsLocal[local] = residenstLocal;
+    residenstLocal = [];
+  });
+  return geoResidentsLocal;
+}
+
+function getGeoSpeciesLocations() {
+  const geoLocations = getGeoLocations();
+  const speciesLocations = getSpeciesLocations(geoLocations);
+  const geoLocationSpecie = {};
+  geoLocations.forEach((local) => {
+    const localSpecie = [];
+    for (let ind = 0; ind < speciesLocations[local].length; ind += 1) {
+      localSpecie.push(speciesLocations[local][ind].name);
+    }
+    geoLocationSpecie[local] = localSpecie;
+  });
+  return geoLocationSpecie;
+}
+
+function geoSpeciesResidentsLocations(local, geoLocations, sorted) {
+  const speciesLocations = getSpeciesLocations(geoLocations);
+  const speciesResidents = [];
+  for (let ind = 0; ind < speciesLocations[local].length; ind += 1) {
+    const residents = [];
+    const specie = speciesLocations[local][ind].name;
+    const localSpecie = {};
+    for (let idx = 0; idx < speciesLocations[local][ind].residents.length; idx += 1) {
+      residents.push(speciesLocations[local][ind].residents[idx].name);
+    }
+    if (sorted) localSpecie[specie] = residents.sort();
+    localSpecie[specie] = residents;
+    speciesResidents.push(localSpecie);
+  }
+  return speciesResidents;
+}
+
+function getGeoSpeciesResidentsLocations(sorted) {
+  const geoLocations = getGeoLocations();
+  const geoLocationSpecie = {};
+  geoLocations.forEach((local) => {
+    geoLocationSpecie[local] = geoSpeciesResidentsLocations(local, geoLocations, sorted);
+  });
+  return geoLocationSpecie;
 }
 
 function returnFilter(options) {
-  if (options.sex && options.sorted === true) return createMapBySex(options.sex, options.sorted);
-  if (options.sorted === true) return createMapByName(options.sorted);
-  if (options.sex) return createMapBySex(options.sex);
-  return createMapByName();
+  if (options.sex && options.sorted === true) {
+    return getGeoSpeciesResidentsLocationsBySex(options.sex, options.sorted);
+  }
+  if (options.sorted === true) {
+    return getGeoSpeciesResidentsLocations(options.sorted);
+  }
+  if (options.sex) return getGeoSpeciesResidentsLocationsBySex(options.sex);
+  return getGeoSpeciesResidentsLocations();
 }
 
 function getAnimalMap(options) {
   // seu código aqui
-  if (!options || !options.includeNames) return getLocation();
+  if (!options || !options.includeNames) {
+    return getGeoSpeciesLocations();
+  }
   return returnFilter(options);
 }
+
+const options = { includeNames: true, sex: 'female' };
+
+console.log(getAnimalMap(options));
 
 module.exports = getAnimalMap;
